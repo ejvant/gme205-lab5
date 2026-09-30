@@ -21,8 +21,6 @@ A local planning team intends to use a simple program that screens land parcels 
 
 Each rule must return a result that includes the rule name, pass/fail, and a short reason. An assessment combines all rules into one report with an overall decision. The system should also be designed for extensibility, which allows to add a new rule (e.g. road access) without rewriting the code/assessment loop. 
 
-## Candidate-class Table
-
 ## Candidate-Class Table
 
 | Phrase from Problem | Initial Interpretation | Keep as Class? | Reason |
