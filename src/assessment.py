@@ -1,0 +1,9 @@
+class ParcelAssessment:
+    def __init__(self, parcel, rules):
+        ...
+
+    def evaluate(self):
+        ...
+
+    def passed(self):
+        ...
