@@ -1,0 +1,47 @@
+{
+  "scenario": "parcel-development-assessment",
+  "parcels": [
+    {
+      "parcel_id": "P-001",
+      "passed": false,
+      "results": [
+        {
+          "rule_name": "MinimumAreaRule",
+          "passed": true,
+          "message": "7200 m² >= 5000 m²"
+        },
+        {
+          "rule_name": "AllowedZoneRule",
+          "passed": true,
+          "message": "Residential' is in allowed zones (Commercial, Residential)"
+        },
+        {
+          "rule_name": "NoHazardOverlapRule",
+          "passed": false,
+          "message": "intersects HZ-01 (Flood, High)"
+        }
+      ]
+    },
+    {
+      "parcel_id": "P-002",
+      "passed": true,
+      "results": [
+        {
+          "rule_name": "MinimumAreaRule",
+          "passed": true,
+          "message": "5600 m² >= 5000 m²"
+        },
+        {
+          "rule_name": "AllowedZoneRule",
+          "passed": true,
+          "message": "Commercial' is in allowed zones (Commercial, Residential)"
+        },
+        {
+          "rule_name": "NoHazardOverlapRule",
+          "passed": true,
+          "message": "does not intersect HZ-01 (Flood, High)"
+        }
+      ]
+    }
+  ]
+}
