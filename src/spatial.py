@@ -58,3 +58,20 @@ class HazardZone:
     @property
     def severity(self):
         return self._severity
+
+class Road:
+    def __init__(self, road_id, geometry):
+        if not road_id:
+            raise ValueError("road_id is required")
+        if geometry is None:
+            raise ValueError("geometry is required")
+        self._road_id = str(road_id)
+        self._geometry = geometry
+
+    @property
+    def road_id(self):
+        return self._road_id
+
+    @property
+    def geometry(self):
+        return self._geometry

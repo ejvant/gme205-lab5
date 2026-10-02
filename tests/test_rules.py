@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from shapely.geometry import box
+from shapely.geometry import LineString, box
 
 # Run pytest from the repository root
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
@@ -12,9 +12,10 @@ from rules import (  # noqa: E402
     AssessmentRule,
     MinimumAreaRule,
     NoHazardOverlapRule,
+    RoadAccessRule,
     RuleResult,
 )
-from spatial import HazardZone, Parcel  # noqa: E402
+from spatial import HazardZone, Parcel, Road 
 
 
 # Same coordinates as run_lab5.py
@@ -72,3 +73,12 @@ def test_no_hazard_overlap(parcel_a, parcel_b, hazard):
 def test_rule_result_to_dict():
     result = RuleResult("x", True, "ok")
     assert result.to_dict() == {"rule_name": "x", "passed": True, "message": "ok"}
+
+# Part I: RoadAccessRule
+def test_road_access_near_and_far():
+    road = Road("RD-T", LineString([(0, -10), (100, -10)]))
+    rule = RoadAccessRule(road, 20)
+    near = Parcel("T-NEAR", box(0, 0, 10, 10), "Residential", 100)   # 10 m from the road
+    far = Parcel("T-FAR", box(0, 50, 10, 60), "Residential", 100)    # 60 m from the road
+    assert rule.evaluate(near).passed is True
+    assert rule.evaluate(far).passed is False

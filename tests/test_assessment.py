@@ -3,14 +3,14 @@ import sys
 from pathlib import Path
 
 import pytest
-from shapely.geometry import box
+from shapely.geometry import LineString, box
 
 # Run pytest from the repository root
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from assessment import ParcelAssessment  # noqa: E402
-from rules import AllowedZoneRule, MinimumAreaRule, NoHazardOverlapRule, RuleResult  # noqa: E402
-from spatial import HazardZone, Parcel  # noqa: E402
+from assessment import ParcelAssessment 
+from rules import AllowedZoneRule, MinimumAreaRule, NoHazardOverlapRule, RoadAccessRule, RuleResult 
+from spatial import HazardZone, Parcel, Road 
 
 
 # Same coordinates as run_lab5.py
@@ -84,3 +84,12 @@ def test_to_dict_is_json_ready(parcel_a, scenario_rules):
     json.dumps(data)   # raises if a Shapely geometry slipped into the report
     assert data["parcel_id"] == "P-001"
     assert data["passed"] is False
+
+# Part I: the new rule joins by adding one object to the list
+def test_new_rule_joins_without_coordinator_change(parcel_b, scenario_rules):
+    road = Road("RD-01", LineString([(0, -10), (200, -10)]))
+    rules = scenario_rules + [RoadAccessRule(road, 20)]
+    results = ParcelAssessment(parcel_b, rules).evaluate()
+    assert len(results) == 4
+    assert results[-1].rule_name == "RoadAccessRule"
+    assert results[-1].passed is True

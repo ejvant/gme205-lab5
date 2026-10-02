@@ -46,3 +46,54 @@ Each rule must return a result that includes the rule name, pass/fail, and a sho
 | Abstraction | «abstract» `AssessmentRule` | `class AssessmentRule(ABC)` with `@abstractmethod evaluate` | Defines what every rule must do without specifying how it is implemented. |
 | Inheritance | Rule classes point to `AssessmentRule` | `class MinimumAreaRule(AssessmentRule)` with `super().__init__(...)` | Provides a shared contract and avoids repeating common rule information. |
 | Polymorphism | All rule classes expose `evaluate(parcel)` | `rule.evaluate(self._parcel)` in `ParcelAssessment.evaluate()` | Coordinator works with the interface, not concrete rule types. |
+
+## Extension Without Coordinator Rewrite
+
+For the extension, I added a `Road` class and a `RoadAccessRule` that inherits `AssessmentRule`. The rule stores one `Road` and a `max_distance`, and passes when `parcel.geometry.distance(road.geometry) <= max_distance`.
+I placed RD-01 along y = -10 and used a 20 m threshold, so both parcels are 10 m from the road.
+
+**Original rules list**
+```python
+rules = [
+    MinimumAreaRule(5000),
+    AllowedZoneRule({"Residential", "Commercial"}),
+    NoHazardOverlapRule(hazard),
+]
+```
+
+**New rules list**
+```python
+rules = [
+    MinimumAreaRule(5000),
+    AllowedZoneRule({"Residential", "Commercial"}),
+    NoHazardOverlapRule(hazard),
+    RoadAccessRule(road, 20),
+]
+```
+
+**Unchanged `ParcelAssessment.evaluate()`**
+```python
+def evaluate(self):
+    results = []
+    for rule in self._rules:
+        result = rule.evaluate(self._parcel)
+        results.append(result)
+    return results
+```
+
+**Why this is different from adding an `elif` branch**
+
+A weak design would make the coordinator check the rule type:
+
+```python
+if rule_type == "minimum_area":
+    ...
+elif rule_type == "allowed_zone":
+    ...
+elif rule_type == "hazard_overlap":
+    ...
+elif rule_type == "road_access":
+    ...  
+```
+
+With that design, `ParcelAssessment` has to know every rule type again and again. So, each new rule means reopening and re-testing the coordinator, and the rule's logic ends up living in the coordinator instead of in the rule. The new design `ParcelAssessment` depends only on the `AssessmentRule` contract, so adding `RoadAccessRule` only required adding one object to the rules list. Thus, `evaluate()` was not changed.

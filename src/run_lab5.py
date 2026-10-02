@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from shapely.geometry import box
+from shapely.geometry import LineString, box   # LineString
 
 from assessment import ParcelAssessment
-from rules import AllowedZoneRule, MinimumAreaRule, NoHazardOverlapRule
-from spatial import HazardZone, Parcel
+from rules import AllowedZoneRule, MinimumAreaRule, NoHazardOverlapRule, RoadAccessRule  
+from spatial import HazardZone, Parcel, Road 
 
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "output" / "lab5_report.json"
 
@@ -33,11 +33,17 @@ def main():
         "High",
     )
 
+    road = Road(                
+        "RD-01",
+        LineString([(0, -10), (200, -10)]),
+    )
+
     # 2. construct rule objects
     rules = [
         MinimumAreaRule(5000),
         AllowedZoneRule({"Residential", "Commercial"}),
         NoHazardOverlapRule(hazard),
+        RoadAccessRule(road, 20),                 
     ]
 
     # 3. compose ParcelAssessment objects
@@ -56,7 +62,6 @@ def main():
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    # print a short summary
     for entry in report["parcels"]:
         status = "PASS" if entry["passed"] else "FAIL"
         print(f"{entry['parcel_id']}: {status}")

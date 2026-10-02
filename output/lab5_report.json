@@ -19,6 +19,11 @@
           "rule_name": "NoHazardOverlapRule",
           "passed": false,
           "message": "intersects HZ-01 (Flood, High)"
+        },
+        {
+          "rule_name": "RoadAccessRule",
+          "passed": true,
+          "message": "10.0 m to RD-01 <= 20.0 m"
         }
       ]
     },
@@ -40,6 +45,11 @@
           "rule_name": "NoHazardOverlapRule",
           "passed": true,
           "message": "does not intersect HZ-01 (Flood, High)"
+        },
+        {
+          "rule_name": "RoadAccessRule",
+          "passed": true,
+          "message": "10.0 m to RD-01 <= 20.0 m"
         }
       ]
     }
