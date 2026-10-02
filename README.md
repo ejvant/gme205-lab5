@@ -38,3 +38,11 @@ Each rule must return a result that includes the rule name, pass/fail, and a sho
 | report | output representation | Not yet | A JSON-ready dictionary is sufficient; a `Report` class would add little responsibility. |
 | road (extension) | domain entity | Yes | Like a hazard zone, it has its own identity and geometry and can be referenced by `RoadAccessRule`. |
 
+## The Four Pillars in the Converted Code
+
+| Pillar | UML Evidence | Code Evidence | Why It Matters |
+|---|---|---|---|
+| Encapsulation | Parcel owns zone and area_sqm | `Parcel.__init__` validates the ID, geometry, zone, and area; read-only properties are used to access values | Ensures that a parcel cannot be created with an invalid state. |
+| Abstraction | «abstract» `AssessmentRule` | `class AssessmentRule(ABC)` with `@abstractmethod evaluate` | Defines what every rule must do without specifying how it is implemented. |
+| Inheritance | Rule classes point to `AssessmentRule` | `class MinimumAreaRule(AssessmentRule)` with `super().__init__(...)` | Provides a shared contract and avoids repeating common rule information. |
+| Polymorphism | All rule classes expose `evaluate(parcel)` | `rule.evaluate(self._parcel)` in `ParcelAssessment.evaluate()` | Coordinator works with the interface, not concrete rule types. |
