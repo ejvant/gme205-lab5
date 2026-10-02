@@ -38,6 +38,18 @@ Each rule must return a result that includes the rule name, pass/fail, and a sho
 | report | output representation | Not yet | A JSON-ready dictionary is sufficient; a `Report` class would add little responsibility. |
 | road (extension) | domain entity | Yes | Like a hazard zone, it has its own identity and geometry and can be referenced by `RoadAccessRule`. |
 
+## OOAD Notes
+
+- *Analysis:* The problem asks for a parcel to be checked against several independent 
+  development rules. The domains are parcel, hazard zone, rule, result, and assessment. 
+  The part most likely to change is the set of rules.
+- *Design:* Each rule object decides one criterion. `ParcelAssessment` coordinates all rules on every `AssessmentRule`. `Parcel` and `HazardZone` own their own state and spatial behavior. `RuleResult` carries each rule's answer. 
+- *Implementation:* `ABC` + `@abstractmethod` for the rule contract, subclasses for each rule, a frozen dataclass for `RuleResult`, read-only properties for encapsulation and composition, and a thin runner that only builds and runs the objects.
+
+## UML Class Diagram
+
+The UML class diagram is stored at: `diagrams/lab 5 uml.png`
+
 ## The Four Pillars in the Converted Code
 
 | Pillar | UML Evidence | Code Evidence | Why It Matters |
@@ -97,3 +109,38 @@ elif rule_type == "road_access":
 ```
 
 With that design, `ParcelAssessment` has to know every rule type again and again. So, each new rule means reopening and re-testing the coordinator, and the rule's logic ends up living in the coordinator instead of in the rule. The new design `ParcelAssessment` depends only on the `AssessmentRule` contract, so adding `RoadAccessRule` only required adding one object to the rules list. Thus, `evaluate()` was not changed.
+
+## Reflection
+
+1. *OOAD:* Creating a model for the problem changed how I approached the whole implementation because it helped me distinguish which responsibilities should belong to each class. So, instead of putting all the development criteria inside `Parcel`, I realized that these rules should be handled by separate rule objects. This allows `Parcel` to focus only on its own properties and spatial behavior, while the rule classes handle the assessment logic. 
+
+2. *Candidate classes:* I chose not to create a separate class for "zoning classification" because it is just a string value stored in `Parcel` and has no identity nor behavior of its own. The decision about which zones are allowed is handled by `AllowedZoneRule`. 
+ 
+3. *Encapsulation:* The `Parcel` stores its ID, geometry, zone, and area as its attributes and provides read-only properties for accessing them. This allows for retrieving values such as `parcel.area_sqm` in other parts of the program without directly modifying them. The constructor also rejects a missing ID, missing geometry, blank zone, and an area that is zero or negative. This helps keep the parcel data valid and reliable for the assessment rules. 
+
+4. *Abstraction:* The `AssessmentRule` promises that every rule has a name and an `evaluate(parcel)` method that produces a `RuleResult`. It does not include specific details of how each rule works. These details are handled by the individual subclasses. Since `evaluate` is abstract, `AssessmentRule` serves only as a blueprint and cannot be instantiated.
+
+5. *Inheritance:* All concrete rule classes inherit the common features of `AssessmentRule`, including the constructor that stores the rule name using `super().__init__(...)`, the read-only `name` property, and the required `evaluate(parcel) -> RuleResult` method. Each subclass then adds its own specific configuration, such as `min_area`, `allowed_zones`, `hazard_zone`, or `road`, along with its own implementation of the `evaluate` method.
+
+6. *Polymorphism:* Each object stored in `ParcelAssessment._rules` follows the `AssessmentRule` interface and therefore provides an `evaluate(parcel)` method. The assessment loop calls the same method for every rule. On the other hand, Python uses the implementation defined by the specific rule object. This allows `ParcelAssessment` to work with different rule types without needing separate `if/elif` statements to identify them.
+
+7. *Composition:* `ParcelAssessment` is neither a parcel nor an assessment rule. Instead, it works with one parcel and a collection of rules. Using inheritance would give the assessment unnecessary attributes and behaviors that do not belong to it. 
+
+8. *Extension:* I extended the system by adding a `Road` class with an ID and `LineString` geometry, along with a `RoadAccessRule` subclass that checks whether a parcel is within the specified maximum distance from a road. A new rule is added to the rule list, and additonal tests were created. No changes were needed in `ParcelAssessment` or the existing rules. 
+
+10. *UML-to-Code Consistency:* When I compared the final UML diagram with the actual implementation, I noticed two differences: `AllowedZoneRule` was shown using a `frozenset` in the diagram, while the code used a `set`, and `ParcelAssessment.to_dict()` was not included in the UML even though it is used by the runner. I corrected the diagram to match the final code. 
+
+## Author
+Enoch Joshua V. Antonio  
+MS Geomatics Engineering
+
+## References
+
+- Python `abc` module – Abstract Base Classes: <https://docs.python.org/3/library/abc.html>
+- Python `dataclasses`: <https://docs.python.org/3/library/dataclasses.html>
+- Python Classes Tutorial: <https://docs.python.org/3/tutorial/classes.html>
+- Shapely – Geometry and Predicates: <https://shapely.readthedocs.io/>
+- pytest Documentation: <https://docs.pytest.org/>
+- diagrams.net / draw.io: <https://www.diagrams.net/>
+
+Edited on GitHub web interface and VS Code
